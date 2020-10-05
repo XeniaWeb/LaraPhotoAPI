@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\v1\AuthController;
+use App\Http\Controllers\v1\PhotoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -24,3 +25,5 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::post('/register', [AuthController::class, 'registerUserApi']);
 Route::post('/login', [AuthController::class, 'loginApi']);
 Route::post('/logout', [AuthController::class, 'logoutApi'])->middleware('auth:api');
+
+Route::apiResource('/v1/photos', PhotoController::class);

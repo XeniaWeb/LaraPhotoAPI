@@ -4,7 +4,6 @@ namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -34,6 +33,13 @@ class AuthController extends Controller
         return response(['user' => $user, 'access_token' => $accessToken], 201);
     }
 
+    /**
+     * Login user in api.
+     *
+     * @param Request $request
+     * @return Response
+     */
+
     public function loginApi(Request $request)
     {
         $loginData = $request->validate([
@@ -50,9 +56,14 @@ class AuthController extends Controller
         return response(['user' => auth()->user(), 'access_token' => $accessToken]);
     }
 
+    /**
+     * Logout user from api.
+     *
+     * @param Request $request
+     */
+
     public function logoutApi(Request $request)
     {
         $request->user()->token()->revoke();
-//        Auth::logout();
     }
 }
