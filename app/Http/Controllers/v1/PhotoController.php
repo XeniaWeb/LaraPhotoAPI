@@ -5,19 +5,33 @@ namespace App\Http\Controllers\v1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PhotoResource;
 use App\Models\Photo;
+use App\Services\v1\PhotoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class PhotoController extends Controller
 {
+    protected $service;
+
+    function __construct(PhotoService $service)
+    {
+        $this->service = $service;
+    }
+
     /**
      * Display a listing of the resource.
      *
+     * @param Request $request
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $photos = Photo::all();
+        $limit = $request['limit'] ?? 12;
+        $offset = $request['offset'] ?? 0;
+        $sort = $request['sort'] ?? '';
+
+        $photos = $this->service->all($limit, $offset, $sort);
+
         return response(['cards' => PhotoResource::collection($photos), 'message' => 'Retrieved successfully']);
     }
 
@@ -36,7 +50,7 @@ class PhotoController extends Controller
             'author_id' => 'required',
             'album_id' => 'required',
             'description' => 'required|min:60',
-            'photo' => 'required|unique:photos',
+            'photo' => 'required',
             'is_liked_by_me' => 'required',
         ]);
 
@@ -44,7 +58,15 @@ class PhotoController extends Controller
             return response(['error' => $validator->errors(), 'message' => 'Validation Error'], 418);
         }
 
+        $card = $request->file('photo')->store('/', 'photos');
+
+        if (!$card) {
+            return response(['message' => 'Error file upload'], 500);
+        }
+
         $photo = Photo::create($data);
+
+        $photo->update(['photo' => $card]);
 
         return response(['card' => new PhotoResource($photo), 'message' => 'Created successfully'], 201);
     }
@@ -57,6 +79,8 @@ class PhotoController extends Controller
      */
     public function show(Photo $photo)
     {
+        $photo = $this->service->formatToJson($photo);
+
         return response(['card' => new PhotoResource($photo), 'message' => 'Retrieved successfully'], 200);
     }
 

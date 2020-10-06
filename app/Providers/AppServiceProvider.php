@@ -3,9 +3,14 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Services;
 
 class AppServiceProvider extends ServiceProvider
 {
+    public $singletons = [
+        v1\PhotoService::class => v1\PhotoService::class
+    ];
+
     /**
      * Register any application services.
      *
