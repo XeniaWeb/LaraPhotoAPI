@@ -7,6 +7,7 @@ use App\Http\Resources\PhotoResource;
 use App\Models\Photo;
 use App\Services\v1\PhotoService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class PhotoController extends Controller
@@ -16,6 +17,9 @@ class PhotoController extends Controller
     function __construct(PhotoService $service)
     {
         $this->service = $service;
+        $this->middleware('auth:api', [
+            'except' => ['index', 'show']
+        ]);
     }
 
     /**
@@ -43,32 +47,36 @@ class PhotoController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->all();
+        try {
+            $data = $request->all();
 
-        $validator = Validator::make($data, [
-            'title' => 'required|max:255',
-            'author_id' => 'required',
-            'album_id' => 'required',
-            'description' => 'required|min:60',
-            'photo' => 'required',
-            'is_liked_by_me' => 'required',
-        ]);
+            $validator = Validator::make($data, [
+                'title' => 'required|max:255',
+                'author_id' => 'required',
+                'album_id' => 'required',
+                'description' => 'required|min:60',
+                'photo' => 'required|unique:photos',
+                'is_liked_by_me' => 'required',
+            ]);
 
-        if ($validator->fails()) {
-            return response(['error' => $validator->errors(), 'message' => 'Validation Error'], 418);
+            if ($validator->fails()) {
+                return response(['error' => $validator->errors(), 'message' => 'Validation Error'], 418);
+            }
+
+            $card = $request->file('photo')->store('/', 'photos');
+
+            if (!$card) {
+                return response(['message' => 'Error file upload'], 500);
+            }
+
+            $photo = Photo::create($data);
+
+            $photo->update(['photo' => $card]);
+
+            return response(['card' => new PhotoResource($photo), 'message' => 'Created successfully'], 201);
+        } catch (\Exception $e) {
+            return response(['message' => $e->getMessage()], 500);
         }
-
-        $card = $request->file('photo')->store('/', 'photos');
-
-        if (!$card) {
-            return response(['message' => 'Error file upload'], 500);
-        }
-
-        $photo = Photo::create($data);
-
-        $photo->update(['photo' => $card]);
-
-        return response(['card' => new PhotoResource($photo), 'message' => 'Created successfully'], 201);
     }
 
     /**
@@ -108,6 +116,10 @@ class PhotoController extends Controller
     public function destroy(Photo $photo)
     {
         $photo->delete();
-        return response(['message' => 'Deleted']);
+        $del = Storage::delete('$photo->photo');
+        if ($del) {
+            return response(['message' => 'Deleted']);
+        }
+        return response([$photo->photo, $del], 418);
     }
 }
