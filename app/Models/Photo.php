@@ -20,6 +20,8 @@ class Photo extends Model
         'album_id',
         'photo',
         'is_liked_by_me',
-        'description'
+        'description',
+        'comment_count',
+        'like_count'
     ];
 }

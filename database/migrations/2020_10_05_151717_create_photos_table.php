@@ -20,9 +20,9 @@ class CreatePhotosTable extends Migration
             $table->foreignId('author_id');
             $table->foreignId('album_id');
             $table->string('photo')->unique();
-            $table->integer('comment_count')->nullable();
-            $table->integer('like_count')->nullable();
-            $table->boolean('is_liked_by_me');
+            $table->integer('comment_count')->default(0);
+            $table->integer('like_count')->default(0);
+            $table->boolean('is_liked_by_me')->default(0);
             $table->timestamps();
         });
     }

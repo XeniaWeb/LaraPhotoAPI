@@ -7,7 +7,6 @@ use App\Http\Resources\PhotoResource;
 use App\Models\Photo;
 use App\Services\v1\PhotoService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class PhotoController extends Controller
@@ -48,7 +47,7 @@ class PhotoController extends Controller
     public function store(Request $request)
     {
         try {
-            $data = $request->all();
+            $data = $this->service->formatFromJson($request->all());
 
             $validator = Validator::make($data, [
                 'title' => 'required|max:255',
@@ -72,6 +71,7 @@ class PhotoController extends Controller
             $photo = Photo::create($data);
 
             $photo->update(['photo' => $card]);
+            $photo = $this->service->formatToJson($photo);
 
             return response(['card' => new PhotoResource($photo), 'message' => 'Created successfully'], 201);
         } catch (\Exception $e) {
@@ -115,11 +115,18 @@ class PhotoController extends Controller
      */
     public function destroy(Photo $photo)
     {
-        $photo->delete();
-        $del = Storage::delete('$photo->photo');
-        if ($del) {
-            return response(['message' => 'Deleted']);
+//   Этот код для локального компьютера
+        if (file_exists(public_path('storage\\photos\\' . $photo->photo))) {
+            unlink(public_path('storage\\photos\\' . $photo->photo));
+
+//    Этот Код для хостинга
+//        if (file_exists('storage/photos/' . $photo->photo )) {
+//            unlink('storage/photos/' . $photo->photo );
+
+            $photo->delete();
+            return response(['message' => 'Deleted.'], 200);
+        } else {
+            return response(['message' => 'File not exist', 'file name' => $photo->photo], 404);
         }
-        return response([$photo->photo, $del], 418);
     }
 }

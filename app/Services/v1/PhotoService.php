@@ -15,22 +15,23 @@ class PhotoService
 
         $sortInfo = $this->buildSort($sort);
 
-    //         ----thousands or 10s of thousands
+//         ----thousands or 10s of thousands
 //         return Photo::cursor()->filter(function ($photo) use ($offset) {
 //            return $photo->id >= $offset;
 //         })->take($limit)->map([$this, 'formatToJson']);
 
-    //        ---- without sort
+//        ---- without sort
 //        return Photo::offset($offset)->limit($limit)->get()->map([$this, 'formatToJson']);
 
-    //        ---- with sort
+//        ---- with sort
 
         return Photo::orderBy($sortInfo[0], $sortInfo[1])->offset($offset)->limit($limit)->get()->map([$this, 'formatToJson']);
     }
 
-    private function buildSort($rowSort) {
+    private function buildSort($rowSort)
+    {
         if (empty($rowSort)) {
-            return['created_at', 'asc'];
+            return ['created_at', 'asc'];
         }
 
         $orderable = collect([
@@ -55,6 +56,11 @@ class PhotoService
         return [$field, $dir];
     }
 
+    public function getAllFromJson()
+    {
+        return Photo::all()->map([$this, 'formatFromJson']);
+    }
+
     public function formatToJson($photo)
     {
         return [
@@ -69,6 +75,20 @@ class PhotoService
             'isLikedByMe' => $photo->is_liked_by_me,
             'createdAt' => $photo->created_at,
             'updatedAt' => $photo->updated_at,
+        ];
+    }
+
+    public function formatFromJson($data)
+    {
+        return [
+            'title' => $data['title'],
+            'description' => $data['description'],
+            'author_id' => $data['authorId'],
+            'album_id' => $data['albumId'],
+            'photo' => $data['photo'],
+            'comment_count' => $data['commentCount'] ?? 0,
+            'like_count' => $data['likeCount'] ?? 0,
+            'is_liked_by_me' => $data['isLikedByMe']
         ];
     }
 }
