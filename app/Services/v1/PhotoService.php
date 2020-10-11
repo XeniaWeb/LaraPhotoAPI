@@ -6,7 +6,7 @@ use App\Models\Photo;
 
 class PhotoService
 {
-    public function all($limit, $offset, $sort)
+    public function all($limit, $offset, $sort, $where)
     {
         // Set Max of $limit
         if ($limit > 50) {
@@ -14,6 +14,7 @@ class PhotoService
         }
 
         $sortInfo = $this->buildSort($sort);
+        $whereClauses = $this->buildWhere($where);
 
 //         ----thousands or 10s of thousands
 //         return Photo::cursor()->filter(function ($photo) use ($offset) {
@@ -24,13 +25,73 @@ class PhotoService
 //        return Photo::offset($offset)->limit($limit)->get()->map([$this, 'formatToJson']);
 
 //        ---- with sort
+        $query = Photo::orderBy($sortInfo[0], $sortInfo[1])->offset($offset)->limit($limit);
 
-        return Photo::orderBy($sortInfo[0], $sortInfo[1])->offset($offset)->limit($limit)->get()->map([$this, 'formatToJson']);
+        if (!empty($whereClauses)) {
+            $query->where($whereClauses);
+        }
+
+        return $query->get()->map([$this, 'formatToJson']);
     }
 
-    private function buildSort($rowSort)
+    private function buildWhere($rawWhere)
     {
-        if (empty($rowSort)) {
+        if (empty($rawWhere)) {
+            return [];
+        }
+
+        $queryable = collect([
+            'authorid' => 'author_id',
+            'albumid' => 'album_id',
+            'commentcount' => 'comment_count',
+            'likecount' => 'like_count',
+            'createdat' => 'created_at',
+            'updatedat' => 'updated_at',
+            'id' => 'id'
+        ]);
+
+        $operators = collect([
+            'eq' => '=',
+            'ne' => '<>',
+            'lt' => '<',
+            'lte' => '<=',
+            'gt' => '>',
+            'gte' => '>=',
+        ]);
+
+        //column:operator:value,column2:operator2:value2
+        $rawClause = collect(explode(',', strtolower($rawWhere)));
+        $clauses = collect([]);
+
+        $rawClause->each(function ($item, $key) use ($queryable, $operators, $clauses) {
+            //column:operator:value
+            $parts = explode(':', $item);
+
+            if (count($parts) != 3) {
+                return false;
+            }
+
+            $field = $queryable->get($parts[0]) ?? '';
+            $operator = $operators->get($parts[1]) ?? '';
+
+            if (empty($field) || empty($operator)) {
+                return false;
+            }
+
+            $clauses->push([
+                $field,
+                $operator,
+                $parts[2]
+            ]);
+        });
+
+        return $clauses->all();
+
+    }
+
+    private function buildSort($rawSort)
+    {
+        if (empty($rawSort)) {
             return ['created_at', 'asc'];
         }
 
@@ -49,7 +110,7 @@ class PhotoService
             'desc' => 'desc'
         ]);
 
-        $parts = explode(':', strtolower($rowSort));
+        $parts = explode(':', strtolower($rawSort));
         $field = $orderable->get($parts[0]) ?? 'created_at';
         $dir = $direction->get($parts[1] ?? '') ?? 'asc';
 

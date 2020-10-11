@@ -32,8 +32,9 @@ class PhotoController extends Controller
         $limit = $request['limit'] ?? 12;
         $offset = $request['offset'] ?? 0;
         $sort = $request['sort'] ?? '';
+        $where = $request['where'] ?? '';
 
-        $photos = $this->service->all($limit, $offset, $sort);
+        $photos = $this->service->all($limit, $offset, $sort, $where);
 
         return response(['cards' => PhotoResource::collection($photos), 'message' => 'Retrieved successfully']);
     }
@@ -118,15 +119,21 @@ class PhotoController extends Controller
 //   Этот код для локального компьютера
         if (file_exists(public_path('storage\\photos\\' . $photo->photo))) {
             unlink(public_path('storage\\photos\\' . $photo->photo));
-
-//    Этот Код для хостинга
-//        if (file_exists('storage/photos/' . $photo->photo )) {
-//            unlink('storage/photos/' . $photo->photo );
-
             $photo->delete();
             return response(['message' => 'Deleted.'], 200);
         } else {
             return response(['message' => 'File not exist', 'file name' => $photo->photo], 404);
         }
+
+//    Этот Код для хостинга
+
+//        if (file_exists(env('LINK_IMG') . $photo->photo )) {
+//            unlink(env('LINK_IMG') . $photo->photo );
+//            $photo->delete();
+//
+//            return response(['message' => 'Deleted !'], 200);
+//        } else {
+//            return response(['message' => 'File not exist', 'file name' => env('LINK_IMG') . $photo->photo  ], 404);
+//        }
     }
 }
