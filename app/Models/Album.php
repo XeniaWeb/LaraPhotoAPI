@@ -20,4 +20,12 @@ class Album extends Model
         'preview',
         'description',
     ];
+
+    public function photos() {
+        return $this->HasMany('App\Models\Photo');
+    }
+
+    public function author() {
+        return $this->belongsTo('App\Models\User', 'author_id');
+    }
 }

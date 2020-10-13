@@ -7,7 +7,7 @@ use App\Models\Album;
 
 class AlbumService
 {
-    public function all($limit, $offset, $sort, $where)
+    public function all($limit, $offset, $sort, $where, $include)
     {
         // Set Max of $limit
         if ($limit > 50) {
@@ -16,14 +16,37 @@ class AlbumService
 
         $sortInfo = $this->buildSort($sort);
         $whereClauses = $this->buildWhere($where);
+        $includes = $this->buildWith($include);
 
         $query = Album::orderBy($sortInfo[0], $sortInfo[1])->offset($offset)->limit($limit);
+
+        if (!empty($includes)) {
+            $query->with($includes);
+        }
 
         if (!empty($whereClauses)) {
             $query->where($whereClauses);
         }
 
-        return $query->get()->map([$this, 'formatToJson']);
+        return $query->get()->map(function ($album) use ($includes) {
+            return $this->formatToJson($album, $includes);
+        });
+    }
+
+    private function buildWith($rawInclude)
+    {
+        if (empty($rawInclude)) {
+            return [];
+        }
+
+        $includeable = [
+            'author',
+            'photos'
+        ];
+        $parts = explode(',', strtolower($rawInclude));
+
+        return array_intersect($includeable, $parts);
+
     }
 
     private function buildWhere($rawWhere)
@@ -33,7 +56,7 @@ class AlbumService
         }
 
         $queryable = collect([
-            'authorid' => 'author_id',
+            'author.id' => 'author_id',
             'createdat' => 'created_at',
             'updatedat' => 'updated_at',
             'id' => 'id'
@@ -85,7 +108,7 @@ class AlbumService
         }
 
         $orderable = collect([
-            'authorid' => 'author_id',
+            'author.id' => 'author_id',
             'createdat' => 'created_at',
             'updatedat' => 'updated_at',
             'id' => 'id'
@@ -108,17 +131,44 @@ class AlbumService
         return Album::all()->map([$this, 'formatFromJson']);
     }
 
-    public function formatToJson($album)
+    public function formatToJson($album, $includes = [])
     {
-        return [
+        $item = [
             'id' => $album->id,
             'title' => $album->title,
             'description' => $album->description,
-            'authorId' => $album->author_id,
+            'author' => [
+                'id' => $album->author_id,
+            ],
             'preview' => $album->preview,
             'createdAt' => $album->created_at,
             'updatedAt' => $album->updated_at,
+            'resourceUrl' => route('albums.show', $album->id),
         ];
+
+        if (in_array('author', $includes)) {
+            $item['author'] = array_merge($item['author'], [
+                'name' => $album->author->name,
+                'email' => $album->author->email,
+                'avatar' => $album->author->avatar,
+            ]);
+        }
+
+        if (in_array('photos', $includes)) {
+            $item['photos'] = $album->photos->map(function ($card) {
+                return [
+                    'title' => $card->title,
+                    'description' => $card->description,
+                    'photo' => $card->photo,
+                    'commentCount' => $card->comment_count,
+                    'likeCount' => $card->like_count,
+                    'isLikedByMe' => $card->is_liked_by_me,
+                    'resourceUrl' => route('photos.show', $card->id),
+                ];
+            });
+        }
+
+        return $item;
     }
 
     public function formatFromJson($data)

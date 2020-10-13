@@ -24,4 +24,12 @@ class Photo extends Model
         'comment_count',
         'like_count'
     ];
+
+    public function author() {
+        return $this->belongsTo('App\Models\User', 'author_id');
+    }
+
+    public function album() {
+        return $this->belongsTo('App\Models\Album');
+    }
 }

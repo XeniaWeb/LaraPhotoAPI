@@ -32,8 +32,9 @@ class AlbumController extends Controller
         $offset = $request['offset'] ?? 0;
         $sort = $request['sort'] ?? '';
         $where = $request['where'] ?? '';
+        $include = $request['include'] ?? '';
 
-        $albums = $this->service->all($limit, $offset, $sort, $where);
+        $albums = $this->service->all($limit, $offset, $sort, $where, $include);
 
         return response(['albums'=> AlbumResource::collection($albums), 'message' => 'Retrieved successfully']);
     }
@@ -74,7 +75,6 @@ class AlbumController extends Controller
         } catch (\Exception $e) {
             return response(['message' => $e->getMessage()], 500);
         }
-
     }
 
     /**
@@ -85,7 +85,9 @@ class AlbumController extends Controller
      */
     public function show(Album $album)
     {
-        //
+        $album = $this->service->formatToJson($album, ['author']);
+
+        return response(['Show' => 'Show must go on!', 'card' => new AlbumResource($album), 'message' => 'Retrieved successfully'], 200);
     }
 
     /**
@@ -110,7 +112,5 @@ class AlbumController extends Controller
     {
         $album->delete();
         return response(['message' => 'Deleted.'], 200);
-
-
     }
 }
