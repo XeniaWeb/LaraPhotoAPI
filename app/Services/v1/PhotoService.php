@@ -4,132 +4,65 @@ namespace App\Services\v1;
 
 use App\Models\Photo;
 
-class PhotoService
+class PhotoService extends ResourceService
 {
-    public function all($limit, $offset, $sort, $where)
+    protected array $includes = ['author', 'album'];
+
+    protected array $queryFields = [
+        'authorid' => 'author_id',
+        'albumid' => 'album_id',
+        'commentcount' => 'comment_count',
+        'likecount' => 'like_count',
+        'createdat' => 'created_at',
+        'updatedat' => 'updated_at',
+        'id' => 'id'
+    ];
+
+    protected array $sortFields = [
+        'authorid' => 'author_id',
+        'albumid' => 'album_id',
+        'commentcount' => 'comment_count',
+        'likecount' => 'like_count',
+        'createdat' => 'created_at',
+        'updatedat' => 'updated_at',
+        'id' => 'id'
+    ];
+
+    public function all($input)
     {
-        // Set Max of $limit
-        if ($limit > 50) {
-            $limit = 50;
+        $parms = $this->buildParameters($input);
+
+        $query = Photo::offset($parms['offset'])->limit($parms['limit']);
+
+        if (!empty($parms['sort'])) {
+            $query = $query->orderBy($parms['sort'][0], $parms['sort'][1]);
         }
 
-        $sortInfo = $this->buildSort($sort);
-        $whereClauses = $this->buildWhere($where);
-
-//         ----thousands or 10s of thousands
-//         return Photo::cursor()->filter(function ($photo) use ($offset) {
-//            return $photo->id >= $offset;
-//         })->take($limit)->map([$this, 'formatToJson']);
-
-//        ---- without sort
-//        return Photo::offset($offset)->limit($limit)->get()->map([$this, 'formatToJson']);
-
-//        ---- with sort
-        $query = Photo::orderBy($sortInfo[0], $sortInfo[1])->offset($offset)->limit($limit);
-
-        if (!empty($whereClauses)) {
-            $query->where($whereClauses);
+        if (!empty($parms['include'])) {
+            $query->with($parms['include']);
         }
 
-        return $query->get()->map([$this, 'formatToJson']);
-    }
-
-    private function buildWhere($rawWhere)
-    {
-        if (empty($rawWhere)) {
-            return [];
+        if (!empty($parms['where'])) {
+            $query->where($parms['where']);
         }
 
-        $queryable = collect([
-            'authorid' => 'author_id',
-            'albumid' => 'album_id',
-            'commentcount' => 'comment_count',
-            'likecount' => 'like_count',
-            'createdat' => 'created_at',
-            'updatedat' => 'updated_at',
-            'id' => 'id'
-        ]);
-
-        $operators = collect([
-            'eq' => '=',
-            'ne' => '<>',
-            'lt' => '<',
-            'lte' => '<=',
-            'gt' => '>',
-            'gte' => '>=',
-        ]);
-
-        //column:operator:value,column2:operator2:value2
-        $rawClause = collect(explode(',', strtolower($rawWhere)));
-        $clauses = collect([]);
-
-        $rawClause->each(function ($item, $key) use ($queryable, $operators, $clauses) {
-            //column:operator:value
-            $parts = explode(':', $item);
-
-            if (count($parts) != 3) {
-                return false;
-            }
-
-            $field = $queryable->get($parts[0]) ?? '';
-            $operator = $operators->get($parts[1]) ?? '';
-
-            if (empty($field) || empty($operator)) {
-                return false;
-            }
-
-            $clauses->push([
-                $field,
-                $operator,
-                $parts[2]
-            ]);
+        return $query->get()->map(function ($photo) use ($parms) {
+            return $this->formatToJson($photo, $parms['include']);
         });
-
-        return $clauses->all();
-
     }
 
-    private function buildSort($rawSort)
+    public function formatToJson($photo, $includes = [])
     {
-        if (empty($rawSort)) {
-            return ['created_at', 'asc'];
-        }
-
-        $orderable = collect([
-            'authorid' => 'author_id',
-            'albumid' => 'album_id',
-            'commentcount' => 'comment_count',
-            'likecount' => 'like_count',
-            'createdat' => 'created_at',
-            'updatedat' => 'updated_at',
-            'id' => 'id'
-        ]);
-
-        $direction = collect([
-            'asc' => 'asc',
-            'desc' => 'desc'
-        ]);
-
-        $parts = explode(':', strtolower($rawSort));
-        $field = $orderable->get($parts[0]) ?? 'created_at';
-        $dir = $direction->get($parts[1] ?? '') ?? 'asc';
-
-        return [$field, $dir];
-    }
-
-    public function getAllFromJson()
-    {
-        return Photo::all()->map([$this, 'formatFromJson']);
-    }
-
-    public function formatToJson($photo)
-    {
-        return [
+        $item = [
             'id' => $photo->id,
             'title' => $photo->title,
             'description' => $photo->description,
-            'authorId' => $photo->author_id,
-            'albumId' => $photo->album_id,
+            'author' => [
+                'id' => $photo->author_id,
+            ],
+            'album' => [
+                'id' => $photo->album_id,
+                ],
             'photo' => $photo->photo,
             'commentCount' => $photo->comment_count,
             'likeCount' => $photo->like_count,
@@ -137,6 +70,27 @@ class PhotoService
             'createdAt' => $photo->created_at,
             'updatedAt' => $photo->updated_at,
         ];
+
+        if (in_array('author', $includes)) {
+            $item['author'] = array_merge($item['author'], [
+                'name' => $photo->author->name,
+                'email' => $photo->author->email,
+                'avatar' => $photo->author->avatar,
+            ]);
+        }
+
+        if (in_array('album', $includes)) {
+            $item['album'] = array_merge($item['album'], [
+                'title' => $photo->album->title,
+                'description' => $photo->album->description,
+                'preview' => $photo->album->preview,
+                'createdAt' => $photo->album->created_at,
+                'updatedAt' => $photo->album->updated_at,
+                'resourceUrl' => route('albums.show', $photo->album->id),
+            ]);
+        }
+
+        return $item;
     }
 
     public function formatFromJson($data)

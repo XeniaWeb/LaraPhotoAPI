@@ -29,12 +29,7 @@ class PhotoController extends Controller
      */
     public function index(Request $request)
     {
-        $limit = $request['limit'] ?? 12;
-        $offset = $request['offset'] ?? 0;
-        $sort = $request['sort'] ?? '';
-        $where = $request['where'] ?? '';
-
-        $photos = $this->service->all($limit, $offset, $sort, $where);
+        $photos = $this->service->all($request->input());
 
         return response(['cards' => PhotoResource::collection($photos), 'message' => 'Retrieved successfully']);
     }

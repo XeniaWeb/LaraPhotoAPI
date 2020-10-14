@@ -28,13 +28,7 @@ class AlbumController extends Controller
      */
     public function index(Request $request)
     {
-        $limit = $request['limit'] ?? 6;
-        $offset = $request['offset'] ?? 0;
-        $sort = $request['sort'] ?? '';
-        $where = $request['where'] ?? '';
-        $include = $request['include'] ?? '';
-
-        $albums = $this->service->all($limit, $offset, $sort, $where, $include);
+        $albums = $this->service->all($request->input());
 
         return response(['albums'=> AlbumResource::collection($albums), 'message' => 'Retrieved successfully']);
     }
