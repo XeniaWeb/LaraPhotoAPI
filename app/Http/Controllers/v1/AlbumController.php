@@ -20,6 +20,7 @@ class AlbumController extends Controller
             'except' => ['index', 'show']
         ]);
     }
+
     /**
      * Display a listing of the resource.
      *
@@ -30,13 +31,13 @@ class AlbumController extends Controller
     {
         $albums = $this->service->all($request->input());
 
-        return response(['albums'=> AlbumResource::collection($albums), 'message' => 'Retrieved successfully']);
+        return response(['albums' => AlbumResource::collection($albums), 'message' => 'Retrieved successfully']);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -61,7 +62,7 @@ class AlbumController extends Controller
                 return response(['message' => 'Error file upload'], 500);
             }
 
-            $album =Album::create($data);
+            $album = Album::create($data);
             $album->update(['preview' => $preview]);
             $album = $this->service->formatToJson($album);
 
@@ -74,21 +75,21 @@ class AlbumController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Album  $album
+     * @param \App\Models\Album $album
      * @return \Illuminate\Http\Response
      */
     public function show(Album $album)
     {
-        $album = $this->service->formatToJson($album, ['author']);
+        $album = $this->service->single($album, request()->input());
 
-        return response(['Show' => 'Show must go on!', 'card' => new AlbumResource($album), 'message' => 'Retrieved successfully'], 200);
+        return response(['album' => new AlbumResource($album), 'message' => 'Retrieved successfully'], 200);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Album  $album
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Album $album
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Album $album)
@@ -99,7 +100,7 @@ class AlbumController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Album  $album
+     * @param \App\Models\Album $album
      * @return \Illuminate\Http\Response
      */
     public function destroy(Album $album)

@@ -10,7 +10,19 @@ class ResourceService
     protected array $queryFields = [];
     protected array $sortFields = [];
 
-    protected function buildParameters($input) {
+    public function single($model, $input)
+    {
+        $parms = $this->buildParameters($input);
+
+        if (!empty($parms['include'])) {
+            $model->load($parms['include']);
+        }
+
+        return $this->formatToJson($model, $parms['include']);
+    }
+
+    protected function buildParameters($input)
+    {
         $limit = $input['limit'] ?? 6;
         $offset = $input['offset'] ?? 0;
 
@@ -22,15 +34,16 @@ class ResourceService
         // TODO: defaults for limit, offset, and Max limit
 
         return [
-          'limit' => $limit,
-          'offset' => $offset,
-          'sort' => $this->buildSort($input['sort'] ?? ''),
-          'where' => $this->buildWhere($input['where'] ?? ''),
-          'include' =>$this->buildWith($input['include'] ?? '')
+            'limit' => $limit,
+            'offset' => $offset,
+            'sort' => $this->buildSort($input['sort'] ?? ''),
+            'where' => $this->buildWhere($input['where'] ?? ''),
+            'include' => $this->buildWith($input['include'] ?? '')
         ];
     }
 
-    protected function buildWith($rawInclude)
+    protected
+    function buildWith($rawInclude)
     {
         if (empty($rawInclude)) {
             return [];
@@ -42,7 +55,8 @@ class ResourceService
         return array_intersect($includeable, $parts);
     }
 
-    protected function buildWhere($rawWhere)
+    protected
+    function buildWhere($rawWhere)
     {
         if (empty($rawWhere)) {
             return [];
@@ -89,7 +103,8 @@ class ResourceService
 
     }
 
-    protected function buildSort($rawSort)
+    protected
+    function buildSort($rawSort)
     {
         if (empty($rawSort)) {
             return [];

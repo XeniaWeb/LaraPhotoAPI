@@ -83,7 +83,7 @@ class PhotoController extends Controller
      */
     public function show(Photo $photo)
     {
-        $photo = $this->service->formatToJson($photo);
+        $photo = $this->service->single($photo, request()->input());
 
         return response(['card' => new PhotoResource($photo), 'message' => 'Retrieved successfully'], 200);
     }
