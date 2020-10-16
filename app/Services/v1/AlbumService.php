@@ -3,23 +3,34 @@
 namespace App\Services\v1;
 
 use App\Models\Album;
+use Illuminate\Support\Facades\Validator;
 
 class AlbumService extends ResourceService
 {
-    protected array $includes = ['author', 'photos'];
+    protected $includes = ['author', 'photos'];
 
-    protected array $queryFields = [
+    protected $queryFields = [
+        'title' => 'title',
         'author.id' => 'author_id',
         'createdat' => 'created_at',
         'updatedat' => 'updated_at',
         'id' => 'id'
     ];
 
-    protected array $sortFields = [
+    protected $sortFields = [
         'title' => 'title',
         'author.id' => 'author_id',
         'createdat' => 'created_at',
         'updatedat' => 'updated_at',
+        'id' => 'id'
+    ];
+    protected $columnMap = [
+        'title' => 'title',
+        'authorId' => 'author_id',
+        'description' => 'description',
+        'preview' => 'preview',
+        'createdAt' => 'created_at',
+        'updatedAt' => 'updated_at',
         'id' => 'id'
     ];
 
@@ -44,6 +55,48 @@ class AlbumService extends ResourceService
         return $query->get()->map(function ($album) use ($parms) {
             return $this->formatToJson($album, $parms['include']);
         });
+    }
+
+    public function patch($album, $payload)
+    {
+        $this->validateSome($payload);
+
+        return $this->update($album, $payload);
+    }
+
+    public function put($album, $payload)
+    {
+        $this->validateAll($payload);
+
+        return $this->update($album, $payload);
+    }
+
+    private function update($album, $payload)
+    {
+        $actual = $this->convertToActual($payload);
+        $album->update($actual);
+
+        return $this->formatToJson($album);
+    }
+
+    private function validateAll($payload)
+    {
+        Validator::make($payload, [
+            'title' => 'required|string|min:5|max:255',
+            'authorId' => 'required|integer',
+            'description' => 'required|min:60|max:1000',
+            'preview' => 'present|unique:albums|file|nullable',
+        ])->validate();
+    }
+
+    private function validateSome($payload)
+    {
+        Validator::make($payload, [
+            'title' => 'nullable|string|min:5|max:255',
+            'authorId' => 'nullable|integer',
+            'description' => 'nullable|min:60|max:1000',
+            'preview' => 'unique:photos|file|nullable',
+        ])->validate();
     }
 
     public function formatToJson($album, $includes = [])

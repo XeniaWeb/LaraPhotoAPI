@@ -3,12 +3,13 @@
 namespace App\Services\v1;
 
 use App\Models\Photo;
+use Illuminate\Support\Facades\Validator;
 
 class PhotoService extends ResourceService
 {
-    protected array $includes = ['author', 'album'];
+    protected $includes = ['author', 'album'];
 
-    protected array $queryFields = [
+    protected $queryFields = [
         'authorid' => 'author_id',
         'albumid' => 'album_id',
         'commentcount' => 'comment_count',
@@ -18,13 +19,25 @@ class PhotoService extends ResourceService
         'id' => 'id'
     ];
 
-    protected array $sortFields = [
+    protected $sortFields = [
         'authorid' => 'author_id',
         'albumid' => 'album_id',
         'commentcount' => 'comment_count',
         'likecount' => 'like_count',
-        'createdat' => 'created_at',
-        'updatedat' => 'updated_at',
+        'id' => 'id'
+    ];
+
+    protected $columnMap = [
+        'title' => 'title',
+        'authorId' => 'author_id',
+        'description' => 'description',
+        'albumId' => 'album_id',
+        'photo' => 'photo',
+        'commentCount' => 'comment_count',
+        'likeCount' => 'like_count',
+        'isLikedByMe' => 'is_liked_by_me',
+        'createdAt' => 'created_at',
+        'updatedAt' => 'updated_at',
         'id' => 'id'
     ];
 
@@ -51,6 +64,56 @@ class PhotoService extends ResourceService
         });
     }
 
+    public function patch($photo, $payload)
+    {
+        $this->validateSome($payload);
+
+        return $this->update($photo, $payload);
+    }
+
+    public function put($photo, $payload)
+    {
+        $this->validateAll($payload);
+
+        return $this->update($photo, $payload);
+    }
+
+    private function update($photo, $payload)
+    {
+        $actual = $this->convertToActual($payload);
+        $photo->update($actual);
+
+        return $this->formatToJson($photo);
+    }
+
+    private function validateAll($payload)
+    {
+        Validator::make($payload, [
+            'title' => 'required|string|min:5|max:255',
+            'authorId' => 'required|integer',
+            'description' => 'required|min:60|max:1000',
+            'photo' => 'present|nullable',
+            'albumId' => 'required|integer',
+            'commentCount' => 'present|integer|nullable',
+            'likeCount' => 'present|integer|nullable',
+            'isLikedByMe' => 'present|boolean|nullable',
+        ])->validate();
+    }
+
+    private function validateSome($payload)
+    {
+        Validator::make($payload, [
+            'title' => 'nullable|string|min:5|max:255',
+            'authorId' => 'nullable|integer',
+            'description' => 'nullable|min:60|max:1000',
+            'photo' => 'unique:photos|file|nullable',
+            'albumId' => 'nullable|integer',
+            'commentCount' => 'integer|nullable',
+            'likeCount' => 'integer|nullable',
+            'isLikedByMe' => 'boolean|nullable',
+        ])->validate();
+    }
+
     public function formatToJson($photo, $includes = [])
     {
         $item = [
@@ -62,7 +125,7 @@ class PhotoService extends ResourceService
             ],
             'album' => [
                 'id' => $photo->album_id,
-                ],
+            ],
             'photo' => $photo->photo,
             'commentCount' => $photo->comment_count,
             'likeCount' => $photo->like_count,

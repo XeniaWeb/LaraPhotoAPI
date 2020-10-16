@@ -8,6 +8,7 @@ use App\Models\Photo;
 use App\Services\v1\PhotoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class PhotoController extends Controller
 {
@@ -49,7 +50,7 @@ class PhotoController extends Controller
                 'title' => 'required|max:255',
                 'author_id' => 'required',
                 'album_id' => 'required',
-                'description' => 'required|min:60',
+                'description' => 'required|min:60|max:1000',
                 'photo' => 'required|unique:photos',
                 'is_liked_by_me' => 'required',
             ]);
@@ -97,9 +98,20 @@ class PhotoController extends Controller
      */
     public function update(Request $request, Photo $photo)
     {
-        $photo->update($request->all());
+        // PUT -- replace; validate
+        // PATCH -- partial update
 
-        return response(['card' => new PhotoResource($photo), 'message' => 'Updated succesfully'], 201);
+        try {
+            if ($request->isMethod('patch')) {
+                $photo = $this->service->patch($photo, $request->input());
+            } else {
+                $photo = $this->service->put($photo, $request->input());
+            }
+
+            return response(['запрос' => $request->input(), 'card' => new PhotoResource($photo), 'message' => 'Updated succesfully'], 201);
+        } catch (ValidationException $ve) {
+            return response(['errors' => $ve->validator->errors(), 'message' => 'Validation Error'], 422);
+        }
     }
 
     /**

@@ -29,3 +29,5 @@ Route::post('/logout', [AuthController::class, 'logoutApi'])->middleware('auth:a
 
 Route::apiResource('/v1/photos', PhotoController::class);
 Route::apiResource('/v1/albums', AlbumController::class);
+
+Route::post('/user/{id}/userupdate', [AuthController::class, 'updateUserProfile']);

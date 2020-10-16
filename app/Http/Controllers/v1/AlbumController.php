@@ -8,6 +8,7 @@ use App\Models\Album;
 use Illuminate\Http\Request;
 use App\Services\v1\AlbumService;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class AlbumController extends Controller
 {
@@ -53,7 +54,7 @@ class AlbumController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response(['error' => $validator->errors(), 'message' => 'Validation Error'], 418);
+                return response(['error' => $validator->errors(), 'message' => 'Validation Error'], 422);
             }
 
             $preview = $request->file('preview')->store('/', 'photos');
@@ -94,7 +95,20 @@ class AlbumController extends Controller
      */
     public function update(Request $request, Album $album)
     {
-        //
+        // PUT -- replace; validate
+        // PATCH -- partial update
+
+        try {
+            if ($request->isMethod('patch')) {
+                $album = $this->service->patch($album, $request->input());
+            } else {
+                $album = $this->service->put($album, $request->input());
+            }
+
+            return response(['запрос' => $request->input(), 'album' => new AlbumResource($album), 'message' => 'Updated succesfully'], 201);
+        } catch (ValidationException $ve) {
+            return response(['errors' => $ve->validator->errors(), 'message' => 'Validation Error'], 422);
+        }
     }
 
     /**

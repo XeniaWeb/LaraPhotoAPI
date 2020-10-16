@@ -6,9 +6,10 @@ namespace App\Services\v1;
 
 class ResourceService
 {
-    protected array $includes = [];
-    protected array $queryFields = [];
-    protected array $sortFields = [];
+    protected $includes = [];
+    protected $queryFields = [];
+    protected $sortFields = [];
+    protected $columnMap = [];
 
     public function single($model, $input)
     {
@@ -103,8 +104,7 @@ class ResourceService
 
     }
 
-    protected
-    function buildSort($rawSort)
+    protected function buildSort($rawSort)
     {
         if (empty($rawSort)) {
             return [];
@@ -122,5 +122,16 @@ class ResourceService
         $dir = $direction->get($parts[1] ?? '') ?? 'asc';
 
         return [$field, $dir];
+    }
+
+    protected function convertToActual($payload)
+    {
+        $data = [];
+
+        collect($payload)->each(function ($value, $key) use (&$data) {
+            $data[$this->columnMap[$key]] = $value;
+        });
+
+        return $data;
     }
 }
