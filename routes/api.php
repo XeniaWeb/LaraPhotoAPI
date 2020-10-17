@@ -19,7 +19,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 
-
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -30,5 +29,4 @@ Route::post('/logout', [AuthController::class, 'logoutApi'])->middleware('auth:a
 
 Route::apiResource('/v1/photos', PhotoController::class);
 Route::apiResource('/v1/albums', AlbumController::class);
-
-Route::post('/user/{id}/update', [AuthorController::class, 'update'])->middleware('auth:api');
+Route::apiResource('/v1/authors', AuthorController::class);
