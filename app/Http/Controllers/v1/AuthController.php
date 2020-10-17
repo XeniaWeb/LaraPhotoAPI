@@ -21,7 +21,8 @@ class AuthController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|max:30',
             'email' => 'email|required|unique:users',
-            'password' => 'required|confirmed'
+            'password' => 'required|confirmed',
+            'avatar' => '',
         ]);
 
         $validatedData['password'] = bcrypt($request->password);
@@ -65,5 +66,16 @@ class AuthController extends Controller
     public function logoutApi(Request $request)
     {
         $request->user()->token()->revoke();
+    }
+
+    public function updateUserProfile(Request $request, $id) {
+
+        $data = $request->input();
+        $user = User::find($id)->update($data);
+
+//        $profile = User::find($userId)->update($data)->get();
+
+
+        return response(['data' => $data, 'user' => $user]);
     }
 }

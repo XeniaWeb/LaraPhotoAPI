@@ -24,6 +24,8 @@ class PhotoService extends ResourceService
         'albumid' => 'album_id',
         'commentcount' => 'comment_count',
         'likecount' => 'like_count',
+        'createdat' => 'created_at',
+        'updatedat' => 'updated_at',
         'id' => 'id'
     ];
 

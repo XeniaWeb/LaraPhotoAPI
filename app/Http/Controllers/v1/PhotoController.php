@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\PhotoResource;
+use App\Http\Resources\v1\PhotoResource;
 use App\Models\Photo;
 use App\Services\v1\PhotoService;
 use Illuminate\Http\Request;

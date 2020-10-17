@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\v1\AlbumController;
 use App\Http\Controllers\v1\AuthController;
+use App\Http\Controllers\v1\AuthorController;
 use App\Http\Controllers\v1\PhotoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -30,4 +31,4 @@ Route::post('/logout', [AuthController::class, 'logoutApi'])->middleware('auth:a
 Route::apiResource('/v1/photos', PhotoController::class);
 Route::apiResource('/v1/albums', AlbumController::class);
 
-Route::post('/user/{id}/userupdate', [AuthController::class, 'updateUserProfile']);
+Route::post('/user/{id}/update', [AuthorController::class, 'update'])->middleware('auth:api');
