@@ -119,6 +119,7 @@ class AlbumService extends ResourceService
                 'name' => $album->author->name,
                 'email' => $album->author->email,
                 'avatar' => $album->author->avatar,
+                'resourceUrl' => route('authors.show', $album->author->id),
             ]);
         }
 

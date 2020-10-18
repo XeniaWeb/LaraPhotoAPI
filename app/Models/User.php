@@ -45,11 +45,33 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function albums() {
+    /**
+     *  Get the albums for the user as author.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function albums()
+    {
         return $this->hasMany('App\Models\Album', 'author_id');
     }
 
-    public function photos() {
+    /**
+     * Get the photos for the user as author.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function photos()
+    {
         return $this->hasMany('App\Models\Photo', 'author_id');
+    }
+
+    /**
+     * Get the comments for the user as author.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function comments()
+    {
+        return $this->hasMany('App\Models\Comments', 'author_id');
     }
 }

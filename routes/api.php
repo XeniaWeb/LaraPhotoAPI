@@ -3,6 +3,7 @@
 use App\Http\Controllers\v1\AlbumController;
 use App\Http\Controllers\v1\AuthController;
 use App\Http\Controllers\v1\AuthorController;
+use App\Http\Controllers\v1\CommentController;
 use App\Http\Controllers\v1\PhotoController;
 use App\Http\Controllers\v1\UploadFilesController;
 use Illuminate\Http\Request;
@@ -31,6 +32,7 @@ Route::post('/logout', [AuthController::class, 'logoutApi'])->middleware('auth:a
 Route::apiResource('/v1/photos', PhotoController::class);
 Route::apiResource('/v1/albums', AlbumController::class);
 Route::apiResource('/v1/authors', AuthorController::class);
+Route::apiResource('/v1/comments', CommentController::class);
 
 Route::post('v1/authors/upload_avatar', [UploadFilesController::class, 'uploadAvatar']);
 Route::post('v1/authors/upload_cover', [UploadFilesController::class, 'uploadCover']);

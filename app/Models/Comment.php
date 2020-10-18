@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Album extends Model
+class Comment extends Model
 {
     use HasFactory;
 
@@ -15,29 +15,24 @@ class Album extends Model
      * @var array
      */
     protected $fillable = [
-        'title',
         'author_id',
-        'preview',
-        'description',
+        'photo_id',
+        'comment_text',
     ];
 
     /**
-     *  Get the photos for the album.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function photos()
-    {
-        return $this->HasMany('App\Models\Photo');
-    }
-
-    /**
-     * Get the author that owns the album.
-     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function author()
     {
         return $this->belongsTo('App\Models\User', 'author_id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function photo()
+    {
+        return $this->belongsTo('App\Models\Photo');
     }
 }

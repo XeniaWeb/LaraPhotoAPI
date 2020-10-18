@@ -25,11 +25,33 @@ class Photo extends Model
         'like_count'
     ];
 
-    public function author() {
+    /**
+     * Get the author that owns the photo.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function author()
+    {
         return $this->belongsTo('App\Models\User', 'author_id');
     }
 
-    public function album() {
+    /**
+     * Get the album that owns the photo.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function album()
+    {
         return $this->belongsTo('App\Models\Album');
+    }
+
+    /**
+     * Get the comments for the photo.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function comments()
+    {
+        return $this->hasMany('App\Models\Comment');
     }
 }

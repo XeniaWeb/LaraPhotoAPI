@@ -114,7 +114,7 @@ class AuthorService extends ResourceService
         ];
 
         if (in_array('albums', $includes)) {
-            $item['photos'] = $author->albums->map(function ($album) {
+            $item['albums'] = $author->albums->map(function ($album) {
                 return [
                     'id' => $album->id,
                     'title' => $album->title,
@@ -126,5 +126,4 @@ class AuthorService extends ResourceService
         }
         return $item;
     }
-
 }

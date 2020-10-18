@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Validator;
 
 class PhotoService extends ResourceService
 {
-    protected $includes = ['author', 'album'];
+    protected $includes = ['author', 'album', 'comments'];
 
     protected $queryFields = [
         'authorid' => 'author_id',
@@ -141,6 +141,7 @@ class PhotoService extends ResourceService
                 'name' => $photo->author->name,
                 'email' => $photo->author->email,
                 'avatar' => $photo->author->avatar,
+                'resourceUrl' => route('authors.show', $photo->author->id),
             ]);
         }
 
@@ -153,6 +154,18 @@ class PhotoService extends ResourceService
                 'updatedAt' => $photo->album->updated_at,
                 'resourceUrl' => route('albums.show', $photo->album->id),
             ]);
+        }
+
+        if (in_array('comments', $includes)) {
+            $item['comments'] = $photo->comments->map(function ($comment) {
+                return [
+                    'id' => $comment->id,
+                    'authorId' => $comment->author_id,
+                    'photoId' => $comment->photo_id,
+                    'commentText' => $comment->comment_text,
+                    'resourceUrl' => route('comments.show', $comment->id),
+                ];
+            });
         }
 
         return $item;
