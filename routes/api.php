@@ -36,3 +36,4 @@ Route::apiResource('/v1/comments', CommentController::class);
 
 Route::post('v1/authors/upload_avatar', [UploadFilesController::class, 'uploadAvatar']);
 Route::post('v1/authors/upload_cover', [UploadFilesController::class, 'uploadCover']);
+Route::post('/v1/albums/{id}', [AlbumController::class, 'update']);

@@ -58,6 +58,23 @@ class AlbumService extends ResourceService
         });
     }
 
+    public function postUpdate($request)
+    {
+        $data = $request->input();
+        $this->validateSome($data);
+
+        $album = Album::query()->where('id', $request->id)->first();
+
+        if ($request->file()) {
+            $album = $this->uploadFile($request, 'preview', 'photos', $album);
+        }
+
+        $data = $this->convertToActual($request->input());
+        $album->forceFill($data)->save();
+
+        return $this->formatToJson($album);
+    }
+
     public function patch($album, $payload)
     {
         $this->validateSome($payload);

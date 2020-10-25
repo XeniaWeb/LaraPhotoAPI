@@ -95,17 +95,20 @@ class AlbumController extends Controller
      */
     public function update(Request $request, Album $album)
     {
+        // POST -- full update with ?file
         // PUT -- replace; validate
         // PATCH -- partial update
 
         try {
-            if ($request->isMethod('patch')) {
+            if ($request->isMethod('post')) {
+                $album = $this->service->postUpdate($request);
+            } elseif ($request->isMethod('patch')) {
                 $album = $this->service->patch($album, $request->input());
             } else {
                 $album = $this->service->put($album, $request->input());
             }
 
-            return response(['запрос' => $request->input(), 'album' => new AlbumResource($album), 'message' => 'Updated succesfully'], 201);
+            return response(['album' => $album, 'message' => 'Updated successfully'], 201);
         } catch (ValidationException $ve) {
             return response(['errors' => $ve->validator->errors(), 'message' => 'Validation Error'], 422);
         }
