@@ -24,58 +24,15 @@ class UploadFilesController extends Controller
      */
     public function uploadAvatar(Request $request)
     {
-        if (!empty($request->file('avatar'))) {
-            $avatar = $request->file('avatar')->store('/', 'avatars');
-
-            $author_id = Auth::id();
-            $author = User::query()->where('id', $author_id)->first();
-            if (!empty($author['avatar'])) {
-                $oldAvatar = $author['avatar'];
-//   Этот код для локального компьютера
-
-                if (file_exists(public_path('storage\\avatars\\' . $oldAvatar))) {
-                    unlink(public_path('storage\\avatars\\' . $oldAvatar));
-                }
-//    Этот Код для хостинга
-
-//        if (file_exists(env('LINK_IMG') . $oldAvatar )) {
-//            unlink(env('LINK_IMG') . $oldAvatar );
-//            }
-            }
-            $author->forceFill(['avatar' => $avatar])->save();
-            $author = $this->service->formatToJson($author);
-
-            return response(['avatar' => $avatar, 'author' => $author, 'message' => 'Avatar is uploaded successfully!'], 201);
-        } else {
-            return response(['message' => 'No files for uploading!'], 422);
-        }
+        return $this->service->uploadAvatar($request);
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     */
     public function uploadCover(Request $request)
     {
-        if (!empty($request->file('cover'))) {
-            $cover = $request->file('cover')->store('/', 'photos');
-            $author_id = Auth::id();
-            $author = User::query()->where('id', $author_id)->first();
-            if (!empty($author['cover'])) {
-                $oldCover = $author['cover'];
-//   Этот код для локального компьютера
-
-                if (file_exists(public_path('storage\\photos\\' . $oldCover))) {
-                    unlink(public_path('storage\\photos\\' . $oldCover));
-                }
-//    Этот Код для хостинга
-
-//        if (file_exists(env('LINK_IMG') . $oldCover )) {
-//            unlink(env('LINK_IMG') . $oldCover );
-//            }
-            }
-            $author->forceFill(['cover' => $cover])->save();
-            $author = $this->service->formatToJson($author);
-
-            return response(['cover' => $cover, 'author' => $author, 'message' => 'Cover is uploaded successfully!'], 201);
-        } else {
-            return response(['message' => 'No files for uploading!'], 422);
-        }
+        return $this->service->uploadCover($request);
     }
 }

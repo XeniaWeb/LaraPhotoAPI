@@ -3,6 +3,7 @@
 namespace App\Services\v1;
 
 use App\Models\Album;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class AlbumService extends ResourceService
@@ -149,5 +150,21 @@ class AlbumService extends ResourceService
             'author_id' => $data['authorId'],
             'preview' => $data['preview'],
         ];
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function uploadPreview(Request $request)
+    {
+        $album = $this->uploadFile($request, 'preview', 'photos', 'album');
+
+        if ($album) {
+            $album = $this->formatToJson($album);
+            return response(['preview' => $album['avatar'], 'album' => $album, 'message' => 'File is uploaded successfully!'], 201);
+        } else {
+            return response(['message' => 'No files for uploading!'], 422);
+        }
     }
 }

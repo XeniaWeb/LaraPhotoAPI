@@ -4,6 +4,10 @@
 namespace App\Services\v1;
 
 
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
 class ResourceService
 {
     protected $includes = [];
@@ -43,8 +47,7 @@ class ResourceService
         ];
     }
 
-    protected
-    function buildWith($rawInclude)
+    protected function buildWith($rawInclude)
     {
         if (empty($rawInclude)) {
             return [];
@@ -56,8 +59,7 @@ class ResourceService
         return array_intersect($includeable, $parts);
     }
 
-    protected
-    function buildWhere($rawWhere)
+    protected function buildWhere($rawWhere)
     {
         if (empty($rawWhere)) {
             return [];
@@ -133,5 +135,40 @@ class ResourceService
         });
 
         return $data;
+    }
+
+    protected function uploadFile(Request $request, $key, $disk, $model)
+    {
+        if (!empty($request->file($key))) {
+            $file = $request->file($key)->store('/', $disk);
+
+            if ($model === 'author') {
+                $model = User::query()->where('id', Auth::id())->first();
+            }
+            if (!empty($model[$key])) {
+                $oldFile = $model[$key];
+//   Этот код для локального компьютера
+
+                if (file_exists(public_path('storage\\avatars\\' . $oldFile))) {
+                    unlink(public_path('storage\\avatars\\' . $oldFile));
+                }
+                if (file_exists(public_path('storage\\photos\\' . $oldFile))) {
+                    unlink(public_path('storage\\photos\\' . $oldFile));
+                }
+//    Этот Код для хостинга
+
+//        if (file_exists(env('LINK_IMG') . $oldFile )) {
+//            unlink(env('LINK_IMG') . $oldFile );
+//            }
+//        if (file_exists(env('LINK_AVATARS') . $oldFile )) {
+//            unlink(env('LINK_AVATARS') . $oldFile );
+//            }
+            }
+            $model->forceFill([$key => $file])->save();
+
+            return $model;
+        } else {
+            return false;
+        }
     }
 }
