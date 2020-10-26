@@ -27,6 +27,7 @@ class AuthorService extends ResourceService
     ];
 
     protected $columnMap = [
+        'id' => 'id',
         'name' => 'name',
         'avatar' => 'avatar',
         'description' => 'description',
@@ -57,6 +58,29 @@ class AuthorService extends ResourceService
         return $query->get()->map(function ($author) use ($parms) {
             return $this->formatToJson($author, $parms['include']);
         });
+    }
+
+    public function postUpdate($request, $author)
+    {
+        $data = $request->input();
+        $this->validateSome($data, $author);
+
+        if ($request->file('avatar')) {
+            $data['avatar'] = $request->file('avatar')->store('/', 'avatars');
+            if (!empty($author['avatar'])) {
+                $this->deleteFileIfExists($author['avatar']);
+            }
+        }
+        if ($request->file('cover')) {
+            $data['cover'] = $request->file('cover')->store('/', 'photos');
+            if (!empty($author['cover'])) {
+                $this->deleteFileIfExists($author['cover']);
+            }
+        }
+        $data = $this->convertToActual($data);
+        $author->forceFill($data)->save();
+
+        return $this->formatToJson($author);
     }
 
     public function patch($author, $payload)
@@ -93,9 +117,12 @@ class AuthorService extends ResourceService
     private function validateSome($payload, $author)
     {
         Validator::make($payload, [
+            'id' => 'nullable|integer',
             'name' => 'nullable|string|min:5|max:255',
             'email' => ['nullable', 'email', Rule::unique('users')->ignore($author->id)],
             'description' => 'nullable|min:60|max:1000',
+            'cover' => 'file|nullable',
+            'avatar' => 'file|nullable',
         ])->validate();
     }
 

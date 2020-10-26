@@ -147,22 +147,7 @@ class ResourceService
             }
             if (!empty($model[$key])) {
                 $oldFile = $model[$key];
-//   Этот код для локального компьютера
-
-                if (file_exists(public_path('storage\\avatars\\' . $oldFile))) {
-                    unlink(public_path('storage\\avatars\\' . $oldFile));
-                }
-                if (file_exists(public_path('storage\\photos\\' . $oldFile))) {
-                    unlink(public_path('storage\\photos\\' . $oldFile));
-                }
-//    Этот Код для хостинга
-
-//        if (file_exists(env('LINK_IMG') . $oldFile )) {
-//            unlink(env('LINK_IMG') . $oldFile );
-//            }
-//        if (file_exists(env('LINK_AVATARS') . $oldFile )) {
-//            unlink(env('LINK_AVATARS') . $oldFile );
-//            }
+                $this->deleteFileIfExists($oldFile);
             }
             $model->forceFill([$key => $file])->save();
 
@@ -170,5 +155,27 @@ class ResourceService
         } else {
             return false;
         }
+    }
+
+    protected function deleteFileIfExists($file)
+    {
+//   Этот код для локального компьютера
+
+        if (file_exists(public_path('storage\\avatars\\' . $file))) {
+            unlink(public_path('storage\\avatars\\' . $file));
+        }
+        if (file_exists(public_path('storage\\photos\\' . $file))) {
+            unlink(public_path('storage\\photos\\' . $file));
+        }
+
+//    Этот Код для хостинга
+
+//        if (file_exists(env('LINK_IMG') . $file )) {
+//            unlink(env('LINK_IMG') . $file );
+//            }
+//        if (file_exists(env('LINK_AVATARS') . $file )) {
+//            unlink(env('LINK_AVATARS') . $file );
+//            }
+
     }
 }

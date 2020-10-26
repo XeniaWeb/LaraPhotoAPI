@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\v1\AuthorService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class AuthorController extends Controller
@@ -34,12 +35,11 @@ class AuthorController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Create a new author
+     * is possible only through registration of a new user
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store()
     {
         //
     }
@@ -67,17 +67,25 @@ class AuthorController extends Controller
      */
     public function update(Request $request, User $author)
     {
+        // POST -- full update with ?files
         // PUT -- replace; validate
         // PATCH -- partial update
 
         try {
-            if ($request->isMethod('patch')) {
+            if ($request->isMethod('post')) {
+                $author = User::query()->where('id', Auth::id())->first();
+                if ($request->id == $author->id) {
+                    $author = $this->service->postUpdate($request, $author);
+                } else {
+                    return response(['message' => 'You can only edit your own profile'], 422);
+                }
+            } elseif ($request->isMethod('patch')) {
                 $author = $this->service->patch($author, $request->input());
             } else {
                 $author = $this->service->put($author, $request->input());
             }
 
-            return response(['запрос' => $request->input(), 'author' => $author, 'message' => 'Updated succesfully'], 201);
+            return response(['author' => $author, 'message' => 'Updated successfully'], 201);
         } catch (ValidationException $ve) {
             return response(['errors' => $ve->validator->errors(), 'message' => 'Validation Error'], 422);
         }
