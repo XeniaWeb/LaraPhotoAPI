@@ -104,7 +104,7 @@ class CommentService extends ResourceService
         Validator::make($payload, [
             'authorId' => 'nullable|integer',
             'photoId' => 'nullable|integer',
-            'commentText' => 'nullable|text|min:50',
+            'commentText' => 'nullable|string|min:50',
         ])->validate();
     }
 

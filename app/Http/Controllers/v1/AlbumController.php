@@ -5,6 +5,7 @@ namespace App\Http\Controllers\v1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\v1\AlbumResource;
 use App\Models\Album;
+use App\Models\Photo;
 use Illuminate\Http\Request;
 use App\Services\v1\AlbumService;
 use Illuminate\Support\Facades\Validator;
@@ -122,7 +123,13 @@ class AlbumController extends Controller
      */
     public function destroy(Album $album)
     {
-        $album->delete();
-        return response(['message' => 'Deleted.'], 200);
+        $query = Photo::query()->where('album_id', $album->id)->first();
+        if (!$query) {
+            $album->delete();
+
+            return response(['message' => 'Deleted.'], 200);
+        }
+
+        return response(['message' => 'Пытаемся удалять, но в альбоме есть фотки... Отмена!'], 418);
     }
 }
