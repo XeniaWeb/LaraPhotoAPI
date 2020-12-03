@@ -51,7 +51,7 @@ class PhotoController extends Controller
                 'author_id' => 'required',
                 'album_id' => 'required',
                 'description' => 'required|min:60|max:1000',
-                'photo' => 'required|unique:photos',
+                'photo' => 'required|mime:jpeg,png,bmp|unique:photos',
                 'is_liked_by_me' => 'required',
             ]);
 

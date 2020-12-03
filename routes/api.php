@@ -5,6 +5,7 @@ use App\Http\Controllers\v1\AuthController;
 use App\Http\Controllers\v1\AuthorController;
 use App\Http\Controllers\v1\CommentController;
 use App\Http\Controllers\v1\PhotoController;
+use App\Http\Controllers\v1\SocialController;
 use App\Http\Controllers\v1\UploadFilesController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -33,8 +34,10 @@ Route::apiResource('/v1/photos', PhotoController::class);
 Route::apiResource('/v1/albums', AlbumController::class);
 Route::apiResource('/v1/authors', AuthorController::class);
 Route::apiResource('/v1/comments', CommentController::class);
+Route::apiResource('/v1/socials', SocialController::class);
 
 Route::post('v1/authors/upload_avatar', [UploadFilesController::class, 'uploadAvatar']);
 Route::post('v1/authors/upload_cover', [UploadFilesController::class, 'uploadCover']);
 Route::post('/v1/albums/{id}', [AlbumController::class, 'update']);
 Route::post('/v1/authors/{id}', [AuthorController::class, 'update']);
+Route::post('/v1/socials/{id}', [SocialController::class, 'addSocialToProfile']);
