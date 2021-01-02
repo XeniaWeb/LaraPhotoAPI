@@ -61,7 +61,7 @@ class PhotoService extends ResourceService
             $query->where($parms['where']);
         }
 
-        return $query->get()->map(function ($photo) use ($parms) {
+        return $query->get()->loadCount('likes', 'comments')->map(function ($photo) use ($parms) {
             return $this->formatToJson($photo, $parms['include']);
         });
     }
@@ -129,8 +129,8 @@ class PhotoService extends ResourceService
                 'id' => $photo->album_id,
             ],
             'photo' => $photo->photo,
-            'commentCount' => $photo->comment_count,
-            'likeCount' => $photo->like_count,
+            'commentsCount' => $photo->comments_count,
+            'likesCount' => $photo->likes_count,
             'isLikedByMe' => $photo->is_liked_by_me,
             'createdAt' => $photo->created_at,
             'updatedAt' => $photo->updated_at,
