@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateAuthorSocialTable extends Migration
+class CreateLikesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,9 @@ class CreateAuthorSocialTable extends Migration
      */
     public function up()
     {
-        Schema::create('author_social', function (Blueprint $table) {
+        Schema::create('likes', function (Blueprint $table) {
             $table->foreignId('author_id');
-            $table->foreignId('social_id');
-            $table->string('link');
+            $table->foreignId('photo_id');
         });
     }
 
@@ -27,6 +26,6 @@ class CreateAuthorSocialTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('author_social');
+        Schema::dropIfExists('likes');
     }
 }

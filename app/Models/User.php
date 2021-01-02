@@ -82,4 +82,12 @@ class User extends Authenticatable
     {
         return $this->belongsToMany('App\Models\Social', 'author_social', 'author_id', 'social_id')->withPivot('link');
     }
+
+    /**
+     * The socials that belong to the user.
+     */
+    public function likes()
+    {
+        return $this->belongsToMany('App\Models\Photo', 'likes', 'author_id', 'photo_id')->as('liked_me');
+    }
 }

@@ -8,7 +8,7 @@ use Illuminate\Validation\Rule;
 
 class AuthorService extends ResourceService
 {
-    protected $includes = ['albums'];
+    protected $includes = ['albums','likes'];
 
     protected $queryFields = [
         'name' => 'name',
@@ -149,6 +149,12 @@ class AuthorService extends ResourceService
                     'preview' => $album->preview,
                     'resourceUrl' => route('albums.show', $album->id),
                 ];
+            });
+        }
+
+        if (in_array('likes', $includes)) {
+            $item['likes'] = $author->likes->map(function ($photo) {
+                return $photo->id;
             });
         }
         return $item;

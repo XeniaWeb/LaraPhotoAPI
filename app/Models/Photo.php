@@ -54,4 +54,12 @@ class Photo extends Model
     {
         return $this->hasMany('App\Models\Comment');
     }
+
+    /**
+     * The socials that belong to the user.
+     */
+    public function likes()
+    {
+        return $this->belongsToMany('App\Models\User', 'likes', 'photo_id', 'author_id')->as('liked_me');
+    }
 }

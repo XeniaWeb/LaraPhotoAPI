@@ -5,8 +5,10 @@ namespace App\Http\Controllers\v1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\v1\PhotoResource;
 use App\Models\Photo;
+use App\Models\User;
 use App\Services\v1\PhotoService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -51,7 +53,7 @@ class PhotoController extends Controller
                 'author_id' => 'required',
                 'album_id' => 'required',
                 'description' => 'required|min:60|max:1000',
-                'photo' => 'required|mime:jpeg,png,bmp|unique:photos',
+                'photo' => 'required|mimes:jpeg,png,bmp|unique:photos',
                 'is_liked_by_me' => 'required',
             ]);
 
@@ -142,5 +144,22 @@ class PhotoController extends Controller
 //        } else {
 //            return response(['message' => 'File not exist', 'file name' => env('LINK_IMG') . $photo->photo  ], 404);
 //        }
+    }
+
+    public function toggleLike(Request $request)
+    {
+        $photo = Photo::find($request->id);
+        $author = User::find(Auth::id());
+
+        $photo->likes()->toggle($author->id);
+
+        $likes = $photo->loadCount('likes', 'comments');
+        $likes_of_author = $author->likes->map(function ($photo) {
+            return $photo->id;
+        });
+
+        $likesCount = $likes->likes_count;
+
+        return response(['likesCount' => $likesCount, 'likesOfAuthor' => $likes_of_author, 'message' => 'Like обновлен!'], 200);
     }
 }
