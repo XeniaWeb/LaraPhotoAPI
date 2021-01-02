@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Validator;
 
 class PhotoService extends ResourceService
 {
-    protected $includes = ['author', 'album', 'comments'];
+    protected $includes = ['author', 'album', 'comments','likes'];
 
     protected $queryFields = [
         'authorid' => 'author_id',
@@ -116,7 +116,7 @@ class PhotoService extends ResourceService
         ])->validate();
     }
 
-    public function formatToJson($photo, $includes = [])
+    public function formatToJson($photo, $includes = []): array
     {
         $item = [
             'id' => $photo->id,
@@ -168,10 +168,16 @@ class PhotoService extends ResourceService
             });
         }
 
+        if (in_array('likes', $includes)) {
+            $item['likes'] = $photo->likes->map(function ($authors) {
+                return  $authors->id;
+            });
+        }
+
         return $item;
     }
 
-    public function formatFromJson($data)
+    public function formatFromJson($data): array
     {
         return [
             'title' => $data['title'],
