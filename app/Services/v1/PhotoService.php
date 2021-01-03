@@ -12,8 +12,8 @@ class PhotoService extends ResourceService
     protected $queryFields = [
         'authorid' => 'author_id',
         'albumid' => 'album_id',
-        'commentcount' => 'comment_count',
-        'likecount' => 'like_count',
+        'commentscount' => 'comments_count',
+        'likescount' => 'likes_count',
         'createdat' => 'created_at',
         'updatedat' => 'updated_at',
         'id' => 'id'
@@ -22,8 +22,8 @@ class PhotoService extends ResourceService
     protected $sortFields = [
         'authorid' => 'author_id',
         'albumid' => 'album_id',
-        'commentcount' => 'comment_count',
-        'likecount' => 'like_count',
+        'commentscount' => 'comments_count',
+        'likescount' => 'likes_count',
         'createdat' => 'created_at',
         'updatedat' => 'updated_at',
         'id' => 'id'
@@ -35,9 +35,8 @@ class PhotoService extends ResourceService
         'description' => 'description',
         'albumId' => 'album_id',
         'photo' => 'photo',
-        'commentCount' => 'comment_count',
-        'likeCount' => 'like_count',
-        'isLikedByMe' => 'is_liked_by_me',
+        'commentsCount' => 'comments_count',
+        'likesCount' => 'likes_count',
         'createdAt' => 'created_at',
         'updatedAt' => 'updated_at',
         'id' => 'id'
@@ -47,7 +46,7 @@ class PhotoService extends ResourceService
     {
         $parms = $this->buildParameters($input);
 
-        $query = Photo::offset($parms['offset'])->limit($parms['limit']);
+        $query = Photo::withCount('likes', 'comments')->offset($parms['offset'])->limit($parms['limit']);
 
         if (!empty($parms['sort'])) {
             $query = $query->orderBy($parms['sort'][0], $parms['sort'][1]);
@@ -61,7 +60,7 @@ class PhotoService extends ResourceService
             $query->where($parms['where']);
         }
 
-        return $query->get()->loadCount('likes', 'comments')->map(function ($photo) use ($parms) {
+        return $query->get()->map(function ($photo) use ($parms) {
             return $this->formatToJson($photo, $parms['include']);
         });
     }
@@ -96,9 +95,6 @@ class PhotoService extends ResourceService
             'description' => 'required|min:60|max:1000',
             'photo' => 'present|nullable',
             'albumId' => 'required|integer',
-            'commentCount' => 'present|integer|nullable',
-            'likeCount' => 'present|integer|nullable',
-            'isLikedByMe' => 'present|boolean|nullable',
         ])->validate();
     }
 
@@ -110,9 +106,6 @@ class PhotoService extends ResourceService
             'description' => 'nullable|min:60|max:1000',
             'photo' => 'unique:photos|file|nullable',
             'albumId' => 'nullable|integer',
-            'commentCount' => 'integer|nullable',
-            'likeCount' => 'integer|nullable',
-            'isLikedByMe' => 'boolean|nullable',
         ])->validate();
     }
 
@@ -131,7 +124,6 @@ class PhotoService extends ResourceService
             'photo' => $photo->photo,
             'commentsCount' => $photo->comments_count,
             'likesCount' => $photo->likes_count,
-            'isLikedByMe' => $photo->is_liked_by_me,
             'createdAt' => $photo->created_at,
             'updatedAt' => $photo->updated_at,
         ];
@@ -185,9 +177,6 @@ class PhotoService extends ResourceService
             'author_id' => $data['authorId'],
             'album_id' => $data['albumId'],
             'photo' => $data['photo'],
-            'comment_count' => $data['commentCount'] ?? 0,
-            'like_count' => $data['likeCount'] ?? 0,
-            'is_liked_by_me' => $data['isLikedByMe']
         ];
     }
 }

@@ -28,7 +28,7 @@ class ResourceService
 
     protected function buildParameters($input)
     {
-        $limit = $input['limit'] ?? 6;
+        $limit = $input['limit'] ?? 20;
         $offset = $input['offset'] ?? 0;
 
         // Set Max of $limit
