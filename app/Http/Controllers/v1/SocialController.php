@@ -7,6 +7,7 @@ use App\Models\Social;
 use App\Models\User;
 use App\Services\v1\SocialService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class SocialController extends Controller
@@ -89,6 +90,30 @@ class SocialController extends Controller
 
     public function addSocialToProfile(Request $request, Social $social, User $author)
     {
-        return response(['message' => 'Социалки добавлены!', 201]);
+        $author = User::find(Auth::id());
+
+        $socials = $request->input('social_id');
+            $link = $request->input('link');
+            $author->socials()->attach($socials, ['link' => $link]);
+            return response(['message' => 'Социалки добавлены!','link' => $link, 'socials' => $socials,'Автор ' => $author], 201);
+    }
+
+    public function updateSocialInProfile(Request $request, Social $social, User $author)
+    {
+
+        $author = User::find(Auth::id());
+
+//        $author->socials()->toggle($socials, ['link' => $link); // Или как там у вас называется поле.
+        $author->socials()->syncWithoutDetaching([$request->id => ['link' => $request->input('link')]]);
+
+        return response(['message' => 'Социалки обновлены!','Автор ' => $author], 200);
+    }
+
+    public function deleteSocialFromProfile(Request $request, Social $social, User $author)
+    {
+        $author = User::find(Auth::id());
+        $author->socials()->detach($request->id);
+
+        return response(['message' => 'Социалки удалены!','Автор ' => $author], 201);
     }
 }

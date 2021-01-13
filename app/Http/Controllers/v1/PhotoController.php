@@ -54,7 +54,6 @@ class PhotoController extends Controller
                 'album_id' => 'required',
                 'description' => 'required|min:60|max:1000',
                 'photo' => 'required|mimes:jpeg,png,bmp|unique:photos',
-                'is_liked_by_me' => 'required',
             ]);
 
             if ($validator->fails()) {
@@ -86,7 +85,7 @@ class PhotoController extends Controller
      */
     public function show(Photo $photo)
     {
-        $photo = $this->service->single($photo, request()->input());
+        $photo = $this->service->singlePhoto($photo, request()->input());
 
         return response(['card' => new PhotoResource($photo), 'message' => 'Retrieved successfully'], 200);
     }

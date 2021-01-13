@@ -8,7 +8,7 @@ use Illuminate\Validation\Rule;
 
 class AuthorService extends ResourceService
 {
-    protected $includes = ['albums','likes'];
+    protected $includes = ['albums','likes', 'socials'];
 
     protected $queryFields = [
         'name' => 'name',
@@ -148,6 +148,15 @@ class AuthorService extends ResourceService
                     'description' => $album->description,
                     'preview' => $album->preview,
                     'resourceUrl' => route('albums.show', $album->id),
+                ];
+            });
+        }
+
+        if (in_array('socials', $includes)) {
+            $item['socials'] = $author->socials->map(function ($social) {
+                return [
+                    'social_id' => $social->pivot->social_id,
+                    'link' => $social->pivot->link,
                 ];
             });
         }

@@ -12,8 +12,6 @@ class PhotoService extends ResourceService
     protected $queryFields = [
         'authorid' => 'author_id',
         'albumid' => 'album_id',
-        'commentscount' => 'comments_count',
-        'likescount' => 'likes_count',
         'createdat' => 'created_at',
         'updatedat' => 'updated_at',
         'id' => 'id'
@@ -63,6 +61,19 @@ class PhotoService extends ResourceService
         return $query->get()->map(function ($photo) use ($parms) {
             return $this->formatToJson($photo, $parms['include']);
         });
+    }
+
+    public function singlePhoto($model, $input)
+    {
+        $photo = Photo::withCount('comments', 'likes')->where('id', $model->id)->first();
+
+        $parms = $this->buildParameters($input);
+
+        if (!empty($parms['include'])) {
+            $photo->load($parms['include']);
+        }
+
+        return $this->formatToJson($photo, $parms['include']);
     }
 
     public function patch($photo, $payload)

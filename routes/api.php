@@ -40,8 +40,8 @@ Route::post('v1/authors/upload_avatar', [UploadFilesController::class, 'uploadAv
 Route::post('v1/authors/upload_cover', [UploadFilesController::class, 'uploadCover']);
 Route::post('/v1/albums/{id}', [AlbumController::class, 'update']);
 Route::post('/v1/authors/{id}', [AuthorController::class, 'update']);
-//Route::post('/v1/socials', [SocialController::class, 'addSocialToProfile']);
-//Route::post('/v1/socials/{id}/update', [SocialController::class, 'updateSocialInProfile']);
-//Route::post('/v1/socials/{id}/delete', [SocialController::class, 'deleteSocialFromProfile']);
+Route::post('/v1/socials/add', [SocialController::class, 'addSocialToProfile']);
+Route::post('/v1/socials/{id}/update', [SocialController::class, 'updateSocialInProfile']);
+Route::post('/v1/socials/{id}/delete', [SocialController::class, 'deleteSocialFromProfile']);
 
 Route::post('/v1/photos/{id}/likes', [PhotoController::class, 'toggleLike']);
