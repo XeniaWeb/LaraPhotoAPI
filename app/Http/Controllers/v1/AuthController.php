@@ -3,35 +3,42 @@
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Response;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
     /**
+     * Handle an incoming registration request.
      * Registration new user for api.
      *
-     * @param Request $request
-     * @return Response
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     *
+     *  @throws \Illuminate\Validation\ValidationException
      */
 
     public function registerUserApi(Request $request)
     {
         $validatedData = $request->validate([
-            'name' => 'required|max:30',
-            'email' => 'email|required|unique:users',
-            'password' => 'required|confirmed',
-            'avatar' => '',
+            'name' => 'required|string|max:30',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|confirmed|min:8',
         ]);
 
         $validatedData['password'] = bcrypt($request->password);
 
-        $user = User::create($validatedData);
+        Auth::login($user = User::create($validatedData));
 
-        $accessToken = $user->createToken('authToken')->accessToken;
+//        $accessToken = $user->createToken('authToken')->accessToken;
 
-        return response(['user' => $user, 'access_token' => $accessToken], 201);
+        event(new Registered($user));
+
+
+        return response(['user' => $user], 201);
     }
 
     /**
@@ -68,14 +75,5 @@ class AuthController extends Controller
         $request->user()->token()->revoke();
     }
 
-    public function updateUserProfile(Request $request, $id) {
 
-        $data = $request->input();
-        $user = User::find($id)->update($data);
-
-//        $profile = User::find($userId)->update($data)->get();
-
-
-        return response(['data' => $data, 'user' => $user]);
-    }
 }

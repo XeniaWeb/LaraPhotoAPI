@@ -24,11 +24,9 @@ class PhotoFactory extends Factory
         return [
             'title' => $this->faker->text(15),
             'description' => $this->faker->text(120),
-            'author_id' => $this->faker->numberBetween(1, 25),
-            'album_id' => $this->faker->numberBetween(1, 5),
+            'author_id' => $this->faker->numberBetween(1, 5),
+            'album_id' => $this->faker->numberBetween(1, 6),
             'photo' => $this->faker->sha256 . 'jpg',
-            'comment_count' => $this->faker->numberBetween(1, 200),
-            'like_count' => $this->faker->numberBetween(1, 200),
-            'is_liked_by_me' => $this->faker->numberBetween(0, 1)];
+        ];
     }
 }

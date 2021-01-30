@@ -22,7 +22,10 @@ class AlbumFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'title' => $this->faker->text(15),
+            'description' => $this->faker->text(120),
+            'author_id' => $this->faker->numberBetween(1, 5),
+            'preview' => $this->faker->sha256 . 'jpg',
         ];
     }
 }
